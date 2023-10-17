@@ -8,7 +8,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [Menu, Play],
 };
 
-document.title = "Rocket Patrol Remake";
+document.title = "CMPM - 170 Prototype";
 document.body.style.backgroundColor = "beige";
 
 new Phaser.Game(config);
