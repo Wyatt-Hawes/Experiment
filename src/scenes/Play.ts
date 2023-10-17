@@ -3,7 +3,7 @@ import * as Phaser from "phaser";
 import Background from "/assets/basic.png";
 import Character from "/assets/character.png";
 import Box from "/assets/Red Box.png";
-const tilemapURL = "/assets/basic.json?url";
+const tilemapURL = "/assets/basic.json";
 
 import { MoveableSprite } from "../classes/moveableSprite";
 import { MoveCommand } from "../classes/command";
