@@ -1,66 +1,123 @@
 import * as Phaser from "phaser";
 
-import starfieldUrl from "/assets/starfield.png";
+import Background from "/assets/basic.png";
+import Character from "/assets/character.png";
+
+import { MoveableSprite } from "../moveableSprite";
+import { MoveCommand } from "../command";
+
+console.log("Play running");
 
 export default class Play extends Phaser.Scene {
-  fire?: Phaser.Input.Keyboard.Key;
-  left?: Phaser.Input.Keyboard.Key;
-  right?: Phaser.Input.Keyboard.Key;
-
-  starfield?: Phaser.GameObjects.TileSprite;
+  player: MoveableSprite | null = null;
+  startingTime: number = performance.now();
   spinner?: Phaser.GameObjects.Shape;
 
   rotationSpeed = Phaser.Math.PI2 / 1000; // radians per millisecond
+  objectsToUpdate: MoveableSprite[] = [];
 
   constructor() {
     super("play");
   }
 
   preload() {
-    this.load.image("starfield", starfieldUrl);
-  }
-
-  #addKey(
-    name: keyof typeof Phaser.Input.Keyboard.KeyCodes,
-  ): Phaser.Input.Keyboard.Key {
-    return this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes[name]);
+    this.load.image("character", Character);
+    this.load.image("base", Background);
   }
 
   create() {
-    this.fire = this.#addKey("F");
-    this.left = this.#addKey("LEFT");
-    this.right = this.#addKey("RIGHT");
+    // Limit to how many ghosts?
+    // Add set timeout?
+    // Reset resets to 5 seconds ago (instead of resetting to a fixed time)
 
-    this.starfield = this.add
-      .tileSprite(
-        0,
-        0,
-        this.game.config.width as number,
-        this.game.config.height as number,
-        "starfield",
-      )
-      .setOrigin(0, 0);
+    this.add.image(0, 0, "base").setOrigin(0, 0);
+    this.createNewPlayer();
+    this.startingTime = performance.now();
 
-    this.spinner = this.add.rectangle(100, 100, 50, 50, 0xff0000);
+    this.addPlayerInputs();
+
+    this.input.keyboard?.on("keydown-Q", () => {
+      this.player?.replay();
+    });
+    this.input.keyboard?.on("keydown-R", () => {
+      this.reset();
+    });
   }
 
-  update(_timeMs: number, delta: number) {
-    this.starfield!.tilePositionX -= 4;
+  getRelativeTime() {
+    return performance.now() - this.startingTime;
+  }
 
-    if (this.left!.isDown) {
-      this.spinner!.rotation -= delta * this.rotationSpeed;
-    }
-    if (this.right!.isDown) {
-      this.spinner!.rotation += delta * this.rotationSpeed;
-    }
+  reset() {
+    this.startingTime = performance.now();
+    this.createNewPlayer();
+    this.recallBackToStart();
+    this.startAllReplays();
+  }
 
-    if (this.fire!.isDown) {
-      this.tweens.add({
-        targets: this.spinner,
-        scale: { from: 1.5, to: 1 },
-        duration: 300,
-        ease: Phaser.Math.Easing.Sine.Out,
-      });
+  createNewPlayer() {
+    if (this.player != null) {
+      this.player.sprite.alpha = 0.5;
     }
+    const pSprite = this.add.sprite(100, 100, "character").setScale(1);
+    this.player = new MoveableSprite(pSprite, 1);
+    this.objectsToUpdate.push(this.player);
+  }
+
+  recallBackToStart() {
+    this.objectsToUpdate.forEach((obj) => {
+      obj.sprite.x = 100;
+      obj.sprite.y = 100;
+      obj.stopAllTimeouts();
+    });
+  }
+
+  startAllReplays() {
+    this.objectsToUpdate.forEach((obj) => {
+      if (obj == this.player) {
+        return;
+      }
+      obj.replay();
+    });
+  }
+
+  addPlayerInputs() {
+    this.input.keyboard?.on(
+      "keydown-W",
+      () =>
+        this.player?.action(
+          new MoveCommand(1000, { x: 0, y: -1 }, this.getRelativeTime()),
+        ),
+    );
+    this.input.keyboard?.on(
+      "keydown-S",
+      () =>
+        this.player?.action(
+          new MoveCommand(1000, { x: 0, y: 1 }, this.getRelativeTime()),
+        ),
+    );
+    this.input.keyboard?.on(
+      "keydown-A",
+      () =>
+        this.player?.action(
+          new MoveCommand(1000, { x: -1, y: 0 }, this.getRelativeTime()),
+        ),
+    );
+    this.input.keyboard?.on(
+      "keydown-D",
+      () =>
+        this.player?.action(
+          new MoveCommand(1000, { x: 1, y: 0 }, this.getRelativeTime()),
+        ),
+    );
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  update(_timeMs: number, _delta: number) {
+    this.objectsToUpdate.forEach((obj) => {
+      obj.update();
+    });
+
+    return;
   }
 }
