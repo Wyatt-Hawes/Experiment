@@ -3,7 +3,7 @@ import * as Phaser from "phaser";
 import Background from "/assets/basic.png";
 import Character from "/assets/character.png";
 import Box from "/assets/Red Box.png";
-//import TileMap from "/assets/basic.json";
+import TileMap from "/assets/basic.json?url";
 
 import { MoveableSprite } from "../classes/moveableSprite";
 import { MoveCommand } from "../classes/command";
@@ -28,7 +28,8 @@ export default class Play extends Phaser.Scene {
   preload() {
     this.load.image("character", Character);
     this.load.image("base", Background);
-    this.load.tilemapTiledJSON("map", "/assets/basic.json");
+    this.load.tilemapTiledJSON("map", TileMap);
+    console.log("Test");
     this.load.image("box", Box);
   }
 
