@@ -3,8 +3,8 @@ import * as Phaser from "phaser";
 import Background from "/assets/basic.png";
 import Character from "/assets/character.png";
 
-import { MoveableSprite } from "../moveableSprite";
-import { MoveCommand } from "../command";
+import { MoveableSprite } from "../classes/moveableSprite";
+import { MoveCommand } from "../classes/command";
 
 console.log("Play running");
 
