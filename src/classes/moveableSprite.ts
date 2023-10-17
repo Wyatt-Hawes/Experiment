@@ -5,25 +5,35 @@ console.log("Moveable sprite running");
 type Timeout = ReturnType<typeof setTimeout>;
 
 export class MoveableSprite {
-  sprite: Phaser.GameObjects.Sprite;
+  sprite: Phaser.Physics.Arcade.Sprite;
   velocity: number;
-  currentVelocity: number;
+  xVelocity: number;
+  yVelocity: number;
   direction: Direction | null = null;
+  moving: boolean = false;
 
   actionList: MoveCommand[] = [];
   timeoutID: Timeout | null = null;
   timeoutIDList: Timeout[] = [];
 
-  constructor(sprite: Phaser.GameObjects.Sprite, velocity = 1) {
+  constructor(sprite: Phaser.Physics.Arcade.Sprite, velocity = 0) {
     this.sprite = sprite;
-    this.currentVelocity = 0;
+    this.xVelocity = 0;
+    this.yVelocity = 0;
     this.velocity = velocity;
   }
 
   action(command: MoveCommand) {
+    if (this.moving) {
+      return;
+    }
+    this.moving = true;
+
     this.actionList.push(command);
 
-    this.currentVelocity = this.velocity;
+    this.xVelocity = this.velocity * command.direction.x;
+    this.yVelocity = this.velocity * command.direction.y;
+
     this.direction = command.direction;
 
     if (this.timeoutID != null) {
@@ -31,7 +41,10 @@ export class MoveableSprite {
     }
 
     this.timeoutID = setTimeout(() => {
-      this.currentVelocity = 0;
+      this.moving = false;
+      this.xVelocity = 0;
+      this.yVelocity = 0;
+
       this.direction = null;
     }, command.duration);
   }
@@ -49,14 +62,14 @@ export class MoveableSprite {
     this.timeoutIDList.forEach((id) => {
       clearTimeout(id);
     });
-    this.currentVelocity = 0;
+    this.xVelocity = 0;
+    this.yVelocity = 0;
   }
 
   update() {
     //console.log("update");
-    if (this.direction != null) {
-      this.sprite.x += this.currentVelocity * this.direction.x;
-      this.sprite.y += this.currentVelocity * this.direction.y;
-    }
+
+    this.sprite.setVelocityX(this.xVelocity);
+    this.sprite.setVelocityY(this.yVelocity);
   }
 }

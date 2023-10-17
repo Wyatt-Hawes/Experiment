@@ -3,9 +3,15 @@ import Menu from "./scenes/Menu";
 import Play from "./scenes/Play";
 
 const config: Phaser.Types.Core.GameConfig = {
-  width: 640,
-  height: 480,
+  width: 960,
+  height: 640,
   scene: [Menu, Play],
+  physics: {
+    default: "arcade",
+    arcade: {
+      gravity: { y: 0 },
+    },
+  },
 };
 
 document.title = "CMPM - 170 Prototype";
