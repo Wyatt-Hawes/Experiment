@@ -3,12 +3,13 @@ import * as Phaser from "phaser";
 import Background from "/assets/basic.png";
 import Character from "/assets/character.png";
 import Box from "/assets/Red Box.png";
+import ButtonPressed from "/assets/button_pressed.png";
+import ButtonUnpressed from "/assets/button_unpressed.png";
 
 import { MoveableSprite } from "../classes/moveableSprite";
+import { Button } from "../classes/button";
 import { MoveCommand, Direction } from "../classes/command";
 import { tilemapJSON } from "../classes/tilemap";
-
-console.log("Play running");
 
 export default class Play extends Phaser.Scene {
   player: MoveableSprite | null = null;
@@ -20,6 +21,7 @@ export default class Play extends Phaser.Scene {
   tileset: Phaser.Tilemaps.Tileset | null = null;
   layer: Phaser.Tilemaps.TilemapLayer | null = null;
   startPosition = { x: 112, y: 112 };
+  button1: Button | null = null;
 
   constructor() {
     super("play");
@@ -31,8 +33,9 @@ export default class Play extends Phaser.Scene {
     this.load.image("character", Character);
     this.load.image("base", Background);
     this.load.tilemapTiledJSON("map", tilemapJSON);
-    console.log("Test");
     this.load.image("box", Box);
+    this.load.image("button-pressed", ButtonPressed);
+    this.load.image("button-unpressed", ButtonUnpressed);
   }
 
   create() {
@@ -59,6 +62,14 @@ export default class Play extends Phaser.Scene {
     this.input.keyboard?.on("keydown-R", () => {
       this.reset();
     });
+
+    this.button1 = new Button(
+      this,
+      32 * 5 + 16,
+      32 * 5 + 16,
+      "button-unpressed",
+      "button-pressed",
+    );
 
     /*
     const rect = this.physics.add.staticSprite(300, 300, "box");
@@ -120,7 +131,7 @@ export default class Play extends Phaser.Scene {
     const aKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A)!;
     const dKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D)!;
 
-    const buttons: {
+    const keys: {
       key: Phaser.Input.Keyboard.Key;
       dir: Direction;
     }[] = [
@@ -131,10 +142,10 @@ export default class Play extends Phaser.Scene {
     ];
 
     const commandDuration = 318;
-    for (const button of buttons) {
-      button.key?.on("down", () => {
+    for (const key of keys) {
+      key.key?.on("down", () => {
         this.player?.action(
-          new MoveCommand(commandDuration, button.dir, this.getRelativeTime()),
+          new MoveCommand(commandDuration, key.dir, this.getRelativeTime()),
         );
       });
     }

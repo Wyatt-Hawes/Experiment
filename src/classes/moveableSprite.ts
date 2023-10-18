@@ -21,6 +21,8 @@ export class MoveableSprite {
     this.xVelocity = 0;
     this.yVelocity = 0;
     this.velocity = velocity;
+
+    this.sprite.depth = 2;
   }
 
   action(command: MoveCommand) {
