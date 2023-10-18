@@ -21,7 +21,7 @@ export default class Play extends Phaser.Scene {
   tileset: Phaser.Tilemaps.Tileset | null = null;
   layer: Phaser.Tilemaps.TilemapLayer | null = null;
   startPosition = { x: 112, y: 112 };
-  button1: Button | null = null;
+  buttons: Button[] = [];
 
   constructor() {
     super("play");
@@ -63,13 +63,15 @@ export default class Play extends Phaser.Scene {
       this.reset();
     });
 
-    this.button1 = new Button(
-      this,
-      32 * 5 + 16,
-      32 * 5 + 16,
-      "button-unpressed",
-      "button-pressed",
-    );
+    const buttonCoords: { x: number; y: number }[] = [
+      { x: 5, y: 6 },
+      { x: 1, y: 1 },
+    ];
+    for (const button of buttonCoords) {
+      this.buttons.push(
+        new Button(this, 32 * button.x + 16, 32 * button.y + 16),
+      );
+    }
 
     /*
     const rect = this.physics.add.staticSprite(300, 300, "box");
@@ -157,6 +159,24 @@ export default class Play extends Phaser.Scene {
       obj.update();
     });
 
+    this.checkButtons();
+
     return;
+  }
+
+  checkButtons() {
+    for (const button of this.buttons) {
+      let pressed: Boolean = false;
+      for (const object of this.objectsToUpdate) {
+        if (button.checkPress(object)) {
+          button.press();
+          pressed = true;
+          //breaks the object loop
+        }
+      }
+      if (pressed == false) {
+        button.unpress();
+      }
+    }
   }
 }

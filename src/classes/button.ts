@@ -1,19 +1,15 @@
+import { MoveableSprite } from "./moveableSprite";
+
 export class Button extends Phaser.GameObjects.Sprite {
   pressed: Boolean = false;
   unpressedTexture: string = "";
   pressedTexture: string = "";
 
-  constructor(
-    scene: Phaser.Scene,
-    x: number,
-    y: number,
-    unpressedTexture: string,
-    pressedTexture: string,
-  ) {
-    super(scene, x, y, unpressedTexture);
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y, "button-unpressed");
 
-    this.unpressedTexture = unpressedTexture;
-    this.pressedTexture = pressedTexture;
+    this.unpressedTexture = "button-unpressed";
+    this.pressedTexture = "button-pressed";
 
     // Add this zone to the scene
     scene.add.existing(this);
@@ -26,8 +22,8 @@ export class Button extends Phaser.GameObjects.Sprite {
     (this.body as Phaser.Physics.Arcade.Body).immovable = true;
   }
 
-  checkPress(sprite: Phaser.GameObjects.GameObject) {
-    return this.scene.physics.overlap(this, sprite);
+  checkPress(object: MoveableSprite) {
+    return this.scene.physics.overlap(this, object.sprite);
   }
 
   press() {
