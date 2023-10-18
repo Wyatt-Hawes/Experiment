@@ -23,6 +23,13 @@ export default class Play extends Phaser.Scene {
   startPosition = { x: 112, y: 112 };
   buttons: Button[] = [];
 
+  winRect: Phaser.GameObjects.Rectangle | null = null;
+  winText: Phaser.GameObjects.Text | null = null;
+  countdownTimer: Phaser.GameObjects.Text | null = null;
+  countdownTimeout: Phaser.Time.TimerEvent | null = null;
+
+  hasWon: boolean = false;
+
   constructor() {
     super("play");
   }
@@ -44,28 +51,42 @@ export default class Play extends Phaser.Scene {
     // Reset resets to 5 seconds ago (instead of resetting to a fixed time)
     //Phaser.Physics.Arcade.Events.OVERLAP;
 
+    //Add tilemap and its collision
     this.map = this.make.tilemap({ key: "map", tileWidth: 32, tileHeight: 32 });
     this.tileset = this.map.addTilesetImage("base");
     this.layer = this.map.createLayer("Tile Layer 1", this.tileset!);
 
+    //Add background image
     this.add.image(0, 0, "base").setOrigin(0, 0);
     this.createNewPlayer();
     this.map.setCollision([111, 131, 113, 117, 127, 124]);
 
+    //set current starting time for shades
     this.startingTime = performance.now();
 
+    //add all player movement inputs
     this.addPlayerInputs();
 
+    /*
     this.input.keyboard?.on("keydown-Q", () => {
       this.player?.replay();
     });
+    */
+
+    //Add special player hotkeys
     this.input.keyboard?.on("keydown-R", () => {
       this.reset();
     });
+    this.input.keyboard?.on("keydown-Q", () => {
+      this.fullReset();
+    });
 
+    //Add clickable buttons
     const buttonCoords: { x: number; y: number }[] = [
-      { x: 5, y: 6 },
       { x: 1, y: 1 },
+      { x: 15, y: 6 },
+      { x: 8, y: 13 },
+      { x: 26, y: 15 },
     ];
     for (const button of buttonCoords) {
       this.buttons.push(
@@ -73,14 +94,17 @@ export default class Play extends Phaser.Scene {
       );
     }
 
-    /*
-    const rect = this.physics.add.staticSprite(300, 300, "box");
+    this.winRect = this.add
+      .rectangle(240, 270, 560, 110, 0x000000)
+      .setOrigin(0, 0)
+      .setVisible(false);
+    this.winText = this.add
+      .text(250, 280, "You WIN!!")
+      .setFontSize("100px")
+      .setColor("white")
+      .setVisible(false);
 
-    //this.physics.add.existing(rect);
-    this.physics.add.collider(this.player!.sprite, rect, () => {
-      console.log("????");
-    });
-    */
+    this.startCountdown();
   }
 
   getRelativeTime() {
@@ -88,10 +112,29 @@ export default class Play extends Phaser.Scene {
   }
 
   reset() {
+    //Reset player position and play its shade.
     this.startingTime = performance.now();
     this.createNewPlayer();
     this.recallBackToStart();
     this.startAllReplays();
+    this.startCountdown();
+  }
+
+  fullReset() {
+    //Reset and delete all shades
+    this.deleteShades();
+    this.reset();
+
+    this.hasWon = false;
+    this.winRect!.visible = false;
+    this.winText!.visible = false;
+  }
+
+  deleteShades() {
+    this.objectsToUpdate.forEach((obj) => {
+      obj.sprite.destroy();
+    });
+    this.objectsToUpdate = [];
   }
 
   createNewPlayer() {
@@ -160,6 +203,8 @@ export default class Play extends Phaser.Scene {
     });
 
     this.checkButtons();
+    this.checkWin();
+    this.setCountdownText();
 
     return;
   }
@@ -178,5 +223,35 @@ export default class Play extends Phaser.Scene {
         button.unpress();
       }
     }
+  }
+
+  checkWin() {
+    const total_pressed = this.buttons.filter((button) => button.pressed);
+    if (total_pressed.length == this.buttons.length) {
+      this.triggerWin();
+    }
+  }
+
+  triggerWin() {
+    this.winRect!.visible = true;
+    this.winText!.visible = true;
+    this.hasWon = true;
+  }
+
+  startCountdown() {
+    this.countdownTimeout?.destroy();
+    if (!this.countdownTimer) {
+      this.countdownTimer = this.add.text(800, 50, "10").setFontSize("50px");
+    }
+    this.countdownTimeout = this.time.delayedCall(18000, () => {
+      if (!this.hasWon) {
+        this.reset();
+      }
+    });
+  }
+  setCountdownText() {
+    const val = this.countdownTimeout!.getProgress().toString();
+    const newText = (18 - parseFloat(val) * 18).toFixed(1);
+    this.countdownTimer?.setText(newText);
   }
 }
