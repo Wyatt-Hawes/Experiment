@@ -5,7 +5,7 @@ import Character from "/assets/character.png";
 import Box from "/assets/Red Box.png";
 
 import { MoveableSprite } from "../classes/moveableSprite";
-import { MoveCommand } from "../classes/command";
+import { MoveCommand, Direction } from "../classes/command";
 import { tilemapJSON } from "../classes/tilemap";
 
 console.log("Play running");
@@ -115,50 +115,29 @@ export default class Play extends Phaser.Scene {
 
   addPlayerInputs() {
     //Key Objects
-    const wKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-    const sKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-    const aKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-    const dKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    const wKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W)!;
+    const sKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S)!;
+    const aKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A)!;
+    const dKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D)!;
+
+    const buttons: {
+      key: Phaser.Input.Keyboard.Key;
+      dir: Direction;
+    }[] = [
+      { key: wKey, dir: { x: 0, y: -1 } },
+      { key: sKey, dir: { x: 0, y: 1 } },
+      { key: aKey, dir: { x: -1, y: 0 } },
+      { key: dKey, dir: { x: 1, y: 0 } },
+    ];
 
     const commandDuration = 318;
-
-    wKey?.on("down", () => {
-      this.player?.action(
-        new MoveCommand(
-          commandDuration,
-          { x: 0, y: -1 },
-          this.getRelativeTime(),
-        ),
-      );
-    });
-
-    sKey?.on("down", () => {
-      this.player?.action(
-        new MoveCommand(
-          commandDuration,
-          { x: 0, y: 1 },
-          this.getRelativeTime(),
-        ),
-      );
-    });
-    aKey?.on("down", () => {
-      this.player?.action(
-        new MoveCommand(
-          commandDuration,
-          { x: -1, y: 0 },
-          this.getRelativeTime(),
-        ),
-      );
-    });
-    dKey?.on("down", () => {
-      this.player?.action(
-        new MoveCommand(
-          commandDuration,
-          { x: 1, y: 0 },
-          this.getRelativeTime(),
-        ),
-      );
-    });
+    for (const button of buttons) {
+      button.key?.on("down", () => {
+        this.player?.action(
+          new MoveCommand(commandDuration, button.dir, this.getRelativeTime()),
+        );
+      });
+    }
   }
 
   // eslint-disable-next-line no-unused-vars
